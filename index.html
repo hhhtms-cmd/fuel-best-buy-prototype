@@ -145,6 +145,7 @@
   .save-neg{color:var(--green);} .save-pos{color:var(--red);}
   .depot-sup{font-size:12px; color:var(--text-3); font-weight:500;}
   .was{font-size:11px; color:var(--text-3); font-weight:500;}
+  .run-meta{font-size:12px; color:var(--text-3); margin:-6px 0 12px;}
   .plan-note{font-size:12px; color:var(--orange); font-weight:600; margin:-6px 0 14px;}
   .rr-title{font-size:13px; font-weight:700; margin-bottom:8px;}
   .rr-opt{display:flex; align-items:center; gap:8px; background:var(--surface); border-radius:12px; padding:10px 12px; margin-bottom:8px; box-shadow:var(--shadow); font-size:13px;}
@@ -208,6 +209,7 @@
       <div class="panel">
         <h2 data-i18n="routingTitle"></h2>
         <p class="sub" data-i18n="routingSub"></p>
+        <div class="run-meta" data-i18n="runMeta"></div>
         <div class="laden-line" data-i18n="ladenLine"></div>
         <div class="segment" id="plan-switch" style="display:inline-flex; margin-bottom:6px;">
           <button data-plan="nightly" class="active" data-i18n="planNightly"></button>
@@ -271,7 +273,7 @@
             <div class="task-dest">Westside Terminal</div>
             <div class="task-row"><span data-i18n="driverPump"></span><span>4</span></div>
             <div class="task-row"><span data-i18n="driverFuel"></span><span id="driver-fuel"></span></div>
-            <div class="task-row"><span data-i18n="driverLoad"></span><span>8,500 gal</span></div>
+            <div class="task-row"><span data-i18n="driverLoad"></span><span>2,500 gal</span></div>
           </div>
           <div class="status-banner" id="status-banner">
             <span id="status-enroute-text"></span>
@@ -331,7 +333,7 @@
       meterTitle:"Meter reading (gal)",
       meterSubmit:"Sync",
       meterDone:"Meter reading synced to dispatch",
-      perLoad:"/load",
+      perLoad:"/run",
       planNightly:"Nightly plan",
       planMorning:"Morning update",
       planChanged:"Morning update \u00b7 1 price changed since nightly plan",
@@ -339,11 +341,12 @@
       rrTitle:"Reroute options",
       rrUse:"Use",
       rrSent:"Reroute requested \u2014 dispatcher notified",
+      runMeta:"3 compartments \u00b7 not yet loaded",
       dispatcherHeading:"Dispatcher dashboard",
       tagline:"Route every load to the right terminal, with confidence.",
       navDispatcher:"Dispatcher", navDriver:"Driver app",
       kpiTerminals:"Terminals evaluated", kpiAllocation:"Allocation used", kpiAlerts:"Pending alerts",
-      routingTitle:"Smart routing", routingSub:"Order #4521 · 8,500 gal Diesel #2 · needed within 3 hrs",
+      routingTitle:"Smart routing", routingSub:"Run 1048 \u00b7 Truck 12 \u00b7 Diesel #2 \u00b7 2,500 gal",
       sliderPrice:"Lowest price", sliderQueue:"Shortest queue", sliderDistance:"Nearest distance",
       formulaNote:"Score reflects true cost = rack price + distance cost + (wait × labor rate) − allocation risk",
       fieldQueue:"Queue: ", unitMin:" min",
@@ -380,7 +383,7 @@
       meterTitle:"Lectura del medidor (gal)",
       meterSubmit:"Sincronizar",
       meterDone:"Lectura sincronizada con despacho",
-      perLoad:"/carga",
+      perLoad:"/ruta",
       planNightly:"Plan nocturno",
       planMorning:"Actualizaci\u00f3n matutina",
       planChanged:"Actualizaci\u00f3n matutina \u00b7 1 precio cambi\u00f3 desde el plan nocturno",
@@ -388,11 +391,12 @@
       rrTitle:"Opciones de redirecci\u00f3n",
       rrUse:"Usar",
       rrSent:"Redirecci\u00f3n solicitada \u2014 despacho notificado",
+      runMeta:"3 compartimentos \u00b7 a\u00fan no cargado",
       dispatcherHeading:"Panel de despacho",
       tagline:"Envía cada carga a la terminal correcta, con confianza.",
       navDispatcher:"Despacho", navDriver:"App del conductor",
       kpiTerminals:"Terminales evaluadas", kpiAllocation:"Cuota utilizada", kpiAlerts:"Alertas pendientes",
-      routingTitle:"Ruta inteligente", routingSub:"Pedido #4521 · 8,500 gal Diésel N.º 2 · necesario en 3 h",
+      routingTitle:"Ruta inteligente", routingSub:"Ruta 1048 \u00b7 Cami\u00f3n 12 \u00b7 Di\u00e9sel N.\u00ba 2 \u00b7 2.500 gal",
       sliderPrice:"Precio más bajo", sliderQueue:"Cola más corta", sliderDistance:"Distancia más cercana",
       formulaNote:"El puntaje refleja costo real = precio + costo de distancia + (espera × tarifa laboral) − riesgo de asignación",
       fieldQueue:"Cola: ", unitMin:" min",
@@ -437,11 +441,12 @@
       rrTitle:"\u6539\u6d3e\u5907\u9009",
       rrUse:"\u9009\u7528",
       rrSent:"\u5df2\u8bf7\u6c42\u6539\u6d3e——\u8c03\u5ea6\u5df2\u6536\u5230",
+      runMeta:"3 \u4e2a\u9694\u8231 \u00b7 \u5c1a\u672a\u88c5\u8f66",
       dispatcherHeading:"调度看板",
       tagline:"让每一车燃油，快速匹配最优油库。",
       navDispatcher:"调度看板", navDriver:"司机端",
       kpiTerminals:"已评估油库", kpiAllocation:"配额使用率", kpiAlerts:"待处理警报",
-      routingTitle:"智能路由", routingSub:"订单 #4521 · 8,500 加仑 2号柴油 · 需在 3 小时内送达",
+      routingTitle:"智能路由", routingSub:"车次 1048 \u00b7 12号车 \u00b7 2号柴油 \u00b7 2,500 加仑",
       sliderPrice:"最低价格", sliderQueue:"最短排队", sliderDistance:"最近距离",
       formulaNote:"评分依据 True Cost = 挂牌价 + 距离成本 + (等待时间 × 人工费率) − 配额风险",
       fieldQueue:"排队：", unitMin:"分钟",
@@ -543,7 +548,7 @@
         (d.signal==='move' ? ' <span class="badge move">'+t('badgeMove')+'</span>' : '');
       var ep = effPrice(d);
       var dvs = (ep-OPIS)*100;
-      var loadD = (ep-OPIS)*8500;
+      var loadD = (ep-OPIS)*2500;
       var moneyLine = d.eligible ?
         '<div class="money-line '+(dvs<=0?'save-neg':'save-pos')+'">'+fmtCents(dvs)+'\u00a2/gal vs OPIS \u00b7 '+fmtDollars(loadD)+t('perLoad')+'</div>' : '';
       var wasTag = (planVersion==='morning' && d.priceAm!=null && d.priceAm!==d.price) ?
