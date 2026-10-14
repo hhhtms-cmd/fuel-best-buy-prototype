@@ -84,7 +84,7 @@
   .stat-pill.q-red{background:var(--red-soft); color:var(--red);}
   .blocked-reason{font-size:11.5px; color:var(--red); margin-top:5px;}
   .score-wrap{text-align:center; width:56px; flex-shrink:0;}
-  .score{font-size:20px; font-weight:700; font-variant-numeric:tabular-nums;}
+  .score{font-size:14px; font-weight:700; font-variant-numeric:tabular-nums;}
   .score-label{font-size:10.5px; color:var(--text-3); margin-top:2px;}
   .sidebar{display:flex; flex-direction:column; gap:12px;}
   .sidebar-title{font-size:13px; font-weight:600; color:var(--text-2); margin:2px 0 0 4px;}
@@ -141,6 +141,14 @@
   .meter-row{display:flex; gap:8px;}
   .meter-row input{flex:1; border:1px solid var(--border); border-radius:10px; padding:9px 12px; font-size:14px; font-family:inherit; min-width:0;}
   .meter-row button{background:var(--blue); color:#fff; border:none; border-radius:10px; padding:9px 16px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap;}
+  .money-line{font-size:15px; font-weight:700; margin:7px 0 3px;}
+  .save-neg{color:var(--green);} .save-pos{color:var(--red);}
+  .depot-sup{font-size:12px; color:var(--text-3); font-weight:500;}
+  .was{font-size:11px; color:var(--text-3); font-weight:500;}
+  .plan-note{font-size:12px; color:var(--orange); font-weight:600; margin:-6px 0 14px;}
+  .rr-title{font-size:13px; font-weight:700; margin-bottom:8px;}
+  .rr-opt{display:flex; align-items:center; gap:8px; background:var(--surface); border-radius:12px; padding:10px 12px; margin-bottom:8px; box-shadow:var(--shadow); font-size:13px;}
+  .rr-opt .who{flex:1;} .rr-opt .who b{font-size:13px;}
   @media (max-width:820px){
     .main-grid{grid-template-columns:1fr;}
     .kpi-row{grid-template-columns:1fr;}
@@ -201,6 +209,11 @@
         <h2 data-i18n="routingTitle"></h2>
         <p class="sub" data-i18n="routingSub"></p>
         <div class="laden-line" data-i18n="ladenLine"></div>
+        <div class="segment" id="plan-switch" style="display:inline-flex; margin-bottom:6px;">
+          <button data-plan="nightly" class="active" data-i18n="planNightly"></button>
+          <button data-plan="morning" data-i18n="planMorning"></button>
+        </div>
+        <div class="plan-note" id="plan-note" style="display:none;" data-i18n="planChanged"></div>
 
         <div class="sliders">
           <div class="slider-row">
@@ -281,6 +294,10 @@
             <button class="emergency-btn" data-alert="emergencyQuota" data-i18n="emergencyQuota"></button>
             <button class="emergency-btn" data-alert="emergencyQueue" data-i18n="emergencyQueue"></button>
           </div>
+          <div id="reroute-panel" style="display:none; margin-top:14px;">
+            <div class="rr-title" data-i18n="rrTitle"></div>
+            <div id="rr-list"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -314,6 +331,14 @@
       meterTitle:"Meter reading (gal)",
       meterSubmit:"Sync",
       meterDone:"Meter reading synced to dispatch",
+      perLoad:"/load",
+      planNightly:"Nightly plan",
+      planMorning:"Morning update",
+      planChanged:"Morning update \u00b7 1 price changed since nightly plan",
+      wasPrice:"was ",
+      rrTitle:"Reroute options",
+      rrUse:"Use",
+      rrSent:"Reroute requested \u2014 dispatcher notified",
       dispatcherHeading:"Dispatcher dashboard",
       tagline:"Route every load to the right terminal, with confidence.",
       navDispatcher:"Dispatcher", navDriver:"Driver app",
@@ -322,12 +347,12 @@
       sliderPrice:"Lowest price", sliderQueue:"Shortest queue", sliderDistance:"Nearest distance",
       formulaNote:"Score reflects true cost = rack price + distance cost + (wait × labor rate) − allocation risk",
       fieldQueue:"Queue: ", unitMin:" min",
-      badgeBest:"Best match", badgeBlocked:"Not eligible", blockedReason:"Contract quota exhausted",
+      badgeBest:"Best match", badgeBlocked:"Stockout", blockedReason:"Out of product \u2014 reported 10:04 AM",
       scoreLabel:"Score", assignedTo:"Assigned to ",
       feedTitle:"Live feed",
       feed1:"Harbor Fuel Depot raised rack price to $2.86/gal",
       feed2:"North County Rack: contract quota renewed +5,000 gal",
-      feed3:"Valley Terminal: quota exhausted for Q3 contract",
+      feed3:"Valley Terminal: out of Diesel #2 \u2014 stockout reported 10:04 AM",
       timeJustNow:"Just now", time5m:"5 min ago", time12m:"12 min ago",
       driverPump:"Pump", driverFuel:"Fuel type", driverLoad:"Load volume", driverFuelValue:"Diesel #2",
       statusEnRoute:"En route", queueTimerLabel:"Queue timer",
@@ -355,6 +380,14 @@
       meterTitle:"Lectura del medidor (gal)",
       meterSubmit:"Sincronizar",
       meterDone:"Lectura sincronizada con despacho",
+      perLoad:"/carga",
+      planNightly:"Plan nocturno",
+      planMorning:"Actualizaci\u00f3n matutina",
+      planChanged:"Actualizaci\u00f3n matutina \u00b7 1 precio cambi\u00f3 desde el plan nocturno",
+      wasPrice:"era ",
+      rrTitle:"Opciones de redirecci\u00f3n",
+      rrUse:"Usar",
+      rrSent:"Redirecci\u00f3n solicitada \u2014 despacho notificado",
       dispatcherHeading:"Panel de despacho",
       tagline:"Envía cada carga a la terminal correcta, con confianza.",
       navDispatcher:"Despacho", navDriver:"App del conductor",
@@ -363,12 +396,12 @@
       sliderPrice:"Precio más bajo", sliderQueue:"Cola más corta", sliderDistance:"Distancia más cercana",
       formulaNote:"El puntaje refleja costo real = precio + costo de distancia + (espera × tarifa laboral) − riesgo de asignación",
       fieldQueue:"Cola: ", unitMin:" min",
-      badgeBest:"Mejor opción", badgeBlocked:"No elegible", blockedReason:"Cuota contractual agotada",
+      badgeBest:"Mejor opción", badgeBlocked:"Sin stock", blockedReason:"Sin producto \u2014 reportado 10:04",
       scoreLabel:"Puntaje", assignedTo:"Asignado a ",
       feedTitle:"Actividad en vivo",
       feed1:"Harbor Fuel Depot subió el precio de lista a $2.86/gal",
       feed2:"North County Rack: cuota contractual renovada +5,000 gal",
-      feed3:"Valley Terminal: cuota agotada para el contrato del Q3",
+      feed3:"Valley Terminal: sin Di\u00e9sel N.\u00ba 2 \u2014 desabastecimiento reportado 10:04",
       timeJustNow:"Justo ahora", time5m:"Hace 5 min", time12m:"Hace 12 min",
       driverPump:"Surtidor", driverFuel:"Tipo de combustible", driverLoad:"Volumen de carga", driverFuelValue:"Diésel N.º 2",
       statusEnRoute:"En camino", queueTimerLabel:"Cronómetro de cola",
@@ -396,6 +429,14 @@
       meterTitle:"\u6d41\u91cf\u8ba1\u8bfb\u6570\uff08\u52a0\u4ed1\uff09",
       meterSubmit:"\u540c\u6b65",
       meterDone:"\u8bfb\u6570\u5df2\u540c\u6b65\u81f3\u8c03\u5ea6",
+      perLoad:"/\u8f66",
+      planNightly:"\u591c\u95f4\u8ba1\u5212",
+      planMorning:"\u65e9\u95f4\u66f4\u65b0",
+      planChanged:"\u65e9\u95f4\u66f4\u65b0 \u00b7 1 \u4e2a\u4ef7\u683c\u8f83\u591c\u95f4\u8ba1\u5212\u6709\u53d8",
+      wasPrice:"\u539f\u4ef7 ",
+      rrTitle:"\u6539\u6d3e\u5907\u9009",
+      rrUse:"\u9009\u7528",
+      rrSent:"\u5df2\u8bf7\u6c42\u6539\u6d3e——\u8c03\u5ea6\u5df2\u6536\u5230",
       dispatcherHeading:"调度看板",
       tagline:"让每一车燃油，快速匹配最优油库。",
       navDispatcher:"调度看板", navDriver:"司机端",
@@ -404,12 +445,12 @@
       sliderPrice:"最低价格", sliderQueue:"最短排队", sliderDistance:"最近距离",
       formulaNote:"评分依据 True Cost = 挂牌价 + 距离成本 + (等待时间 × 人工费率) − 配额风险",
       fieldQueue:"排队：", unitMin:"分钟",
-      badgeBest:"最优选择", badgeBlocked:"配额不足", blockedReason:"合同配额已耗尽",
+      badgeBest:"最优选择", badgeBlocked:"断货", blockedReason:"无货——10:04 报告",
       scoreLabel:"评分", assignedTo:"已指派给 ",
       feedTitle:"实时动态",
       feed1:"Harbor Fuel Depot 挂牌价上调至 $2.86/加仑",
       feed2:"North County Rack：合同配额续签 +5,000 加仑",
-      feed3:"Valley Terminal：Q3 合同配额已耗尽",
+      feed3:"Valley Terminal：2号柴油无货——10:04 报告断货",
       timeJustNow:"刚刚", time5m:"5 分钟前", time12m:"12 分钟前",
       driverPump:"油枪编号", driverFuel:"油品型号", driverLoad:"装载总量", driverFuelValue:"2号柴油",
       statusEnRoute:"行驶中", queueTimerLabel:"排队计时",
@@ -420,10 +461,10 @@
   };
 
   var depots = [
-    {id:1,name:"Westside Terminal",price:2.84,distance:4.2,queue:15,eligible:true,valid:"2:00 PM"},
-    {id:2,name:"Harbor Fuel Depot",price:2.79,distance:11.6,queue:45,eligible:true,valid:"1:30 PM",signal:"move"},
-    {id:3,name:"North County Rack",price:2.91,distance:2.1,queue:120,eligible:true,valid:"3:00 PM"},
-    {id:4,name:"Valley Terminal",price:2.75,distance:18.3,queue:20,eligible:false,valid:"\u2014"}
+    {id:1,name:"Westside Terminal",supplier:"Marathon",price:2.84,priceAm:2.84,distance:4.2,queue:15,eligible:true,valid:"2:00 PM"},
+    {id:2,name:"Harbor Fuel Depot",supplier:"ExxonMobil",price:2.79,priceAm:2.86,distance:11.6,queue:45,eligible:true,valid:"1:30 PM",signal:"move"},
+    {id:3,name:"North County Rack",supplier:"Valero",price:2.91,priceAm:2.91,distance:2.1,queue:120,eligible:true,valid:"3:00 PM"},
+    {id:4,name:"Valley Terminal",supplier:"Phillips 66",price:2.75,priceAm:null,distance:18.3,queue:20,eligible:false,valid:"\u2014"}
   ];
 
   var stops = [
@@ -433,6 +474,11 @@
   ];
 
   var lang = 'en';
+  var OPIS = 2.88;
+  var planVersion = 'nightly';
+  function effPrice(d){ return (planVersion==='morning' && d.priceAm!=null) ? d.priceAm : d.price; }
+  function fmtCents(v){ return (v<=0?'\u2212':'+') + Math.abs(v).toFixed(1); }
+  function fmtDollars(v){ return (v<=0?'\u2212$':'+$') + Math.abs(Math.round(v)).toLocaleString('en-US'); }
   var assignedId = null;
   var arrived = false;
   var timerSeconds = 0;
@@ -456,7 +502,7 @@
     document.getElementById('pct-distance').textContent = Math.round(wd/wSum*100)+'%';
 
     var elig = depots.filter(function(d){return d.eligible;});
-    var prices = elig.map(function(d){return d.price;});
+    var prices = elig.map(function(d){return effPrice(d);});
     var dists = elig.map(function(d){return d.distance;});
     var queues = elig.map(function(d){return d.queue;});
     var minP=Math.min.apply(null,prices), maxP=Math.max.apply(null,prices);
@@ -465,7 +511,7 @@
 
     var scored = depots.map(function(d){
       if(!d.eligible) return Object.assign({},d,{score:null});
-      var ps = maxP===minP ? 1 : 1-(d.price-minP)/(maxP-minP);
+      var ps = maxP===minP ? 1 : 1-(effPrice(d)-minP)/(maxP-minP);
       var ds = maxD===minD ? 1 : 1-(d.distance-minD)/(maxD-minD);
       var qs = maxQ===minQ ? 1 : 1-(d.queue-minQ)/(maxQ-minQ);
       var comp = (ps*wp + qs*wq + ds*wd)/wSum;
@@ -490,13 +536,20 @@
       var isAssigned = d.id === assignedId;
       var cls = (d.eligible ? (isBest?'best':'') : 'blocked') + (isAssigned?' assigned':'');
       var qc = queueClass(d.queue);
-      var nameLine = d.name +
+      var nameLine = d.name + ' <span class="depot-sup">\u00b7 '+(d.supplier||'')+'</span>' +
         (isAssigned ? ' <span class="check">&#10003;</span>' : '') +
         (isBest ? ' <span class="badge best">'+t('badgeBest')+'</span>' : '') +
         (!d.eligible ? ' <span class="badge blocked">'+t('badgeBlocked')+'</span>' : '') +
         (d.signal==='move' ? ' <span class="badge move">'+t('badgeMove')+'</span>' : '');
+      var ep = effPrice(d);
+      var dvs = (ep-OPIS)*100;
+      var loadD = (ep-OPIS)*8500;
+      var moneyLine = d.eligible ?
+        '<div class="money-line '+(dvs<=0?'save-neg':'save-pos')+'">'+fmtCents(dvs)+'\u00a2/gal vs OPIS \u00b7 '+fmtDollars(loadD)+t('perLoad')+'</div>' : '';
+      var wasTag = (planVersion==='morning' && d.priceAm!=null && d.priceAm!==d.price) ?
+        ' <span class="was">('+t('wasPrice')+'$'+d.price.toFixed(2)+')</span>' : '';
       var statsLine =
-        '<span class="stat-pill">$'+d.price.toFixed(2)+'/gal</span>'+
+        '<span class="stat-pill">$'+ep.toFixed(2)+'/gal'+wasTag+'</span>'+
         '<span class="stat-pill">'+d.distance+' mi</span>'+
         '<span class="stat-pill '+qc+'">'+t('fieldQueue')+d.queue+t('unitMin')+'</span>';
       var blockedLine = !d.eligible ? '<div class="blocked-reason">'+t('blockedReason')+'</div>' : '';
@@ -506,6 +559,7 @@
       return '<div class="depot-card '+cls+'" data-id="'+d.id+'">'+
                '<div class="depot-main">'+
                  '<div class="depot-name">'+nameLine+'</div>'+
+                 moneyLine+
                  '<div class="depot-stats">'+statsLine+'</div>'+
                  blockedLine+validLine+
                '</div>'+
@@ -597,6 +651,15 @@
 
   document.getElementById('meter-btn').addEventListener('click', submitMeter);
 
+  document.getElementById('plan-switch').addEventListener('click', function(e){
+    var btn = e.target.closest('button[data-plan]');
+    if(!btn) return;
+    planVersion = btn.getAttribute('data-plan');
+    document.querySelectorAll('#plan-switch button').forEach(function(b){ b.classList.toggle('active', b===btn); });
+    document.getElementById('plan-note').style.display = planVersion==='morning' ? '' : 'none';
+    renderDepots();
+  });
+
   document.getElementById('simulate-btn').addEventListener('click', function(){
     if(timerHandle) return;
     arrived = true;
@@ -618,11 +681,33 @@
     setTimeout(function(){ toast.classList.remove('show'); }, 2200);
   }
 
+  function showReroute(){
+    var alts = depots.filter(function(d){return d.eligible && d.id!==1;})
+                     .sort(function(a,b){return effPrice(a)-effPrice(b);});
+    document.getElementById('rr-list').innerHTML = alts.map(function(d){
+      return '<div class="rr-opt"><div class="who"><b>'+d.name+'</b><br>'+
+        '<span style="color:var(--text-2);font-size:12px;">$'+effPrice(d).toFixed(2)+'/gal \u00b7 '+d.distance+' mi</span></div>'+
+        '<button class="stop-btn" data-rr="'+d.id+'">'+t('rrUse')+'</button></div>';
+    }).join('');
+    document.getElementById('reroute-panel').style.display = '';
+  }
+
   document.querySelectorAll('.emergency-btn').forEach(function(btn){
     btn.addEventListener('click', function(){
       var key = btn.getAttribute('data-alert');
       showToast(t('alertSent')+t(key));
+      showReroute();
     });
+  });
+
+  document.getElementById('reroute-panel').addEventListener('click', function(e){
+    var btn = e.target.closest('button[data-rr]');
+    if(!btn) return;
+    var id = +btn.getAttribute('data-rr');
+    var d = depots.filter(function(x){return x.id===id;})[0];
+    document.querySelector('.task-dest').textContent = d.name;
+    document.getElementById('reroute-panel').style.display = 'none';
+    showToast(t('rrSent')+': '+d.name);
   });
 
   applyLang();
