@@ -146,6 +146,7 @@
   .depot-sup{font-size:12px; color:var(--text-3); font-weight:500;}
   .was{font-size:11px; color:var(--text-3); font-weight:500;}
   .run-meta{font-size:12px; color:var(--text-3); margin:-6px 0 12px;}
+  .why-line{font-size:12px; color:var(--text-2); margin-top:7px; line-height:1.5; border-top:1px dashed var(--border); padding-top:7px;}
   .plan-note{font-size:12px; color:var(--orange); font-weight:600; margin:-6px 0 14px;}
   .rr-title{font-size:13px; font-weight:700; margin-bottom:8px;}
   .rr-opt{display:flex; align-items:center; gap:8px; background:var(--surface); border-radius:12px; padding:10px 12px; margin-bottom:8px; box-shadow:var(--shadow); font-size:13px;}
@@ -342,6 +343,14 @@
       rrUse:"Use",
       rrSent:"Reroute requested \u2014 dispatcher notified",
       runMeta:"3 compartments \u00b7 not yet loaded",
+      whyPrefix:"Why: ",
+      whyBut:", but ",
+      whySuffix:" \u2014 lower total cost",
+      whyFuelMore:"fuel {c}\u00a2/gal more than {n}",
+      whyFuelLess:"fuel {c}\u00a2/gal cheaper than {n}",
+      whyFuelSame:"same fuel price",
+      whyCloser:"{d} mi closer",
+      whyLessWait:"{w} min less wait",
       dispatcherHeading:"Dispatcher dashboard",
       tagline:"Route every load to the right terminal, with confidence.",
       navDispatcher:"Dispatcher", navDriver:"Driver app",
@@ -392,6 +401,14 @@
       rrUse:"Usar",
       rrSent:"Redirecci\u00f3n solicitada \u2014 despacho notificado",
       runMeta:"3 compartimentos \u00b7 a\u00fan no cargado",
+      whyPrefix:"Por qu\u00e9: ",
+      whyBut:", pero ",
+      whySuffix:" \u2014 menor costo total",
+      whyFuelMore:"combustible {c}\u00a2/gal m\u00e1s caro que {n}",
+      whyFuelLess:"combustible {c}\u00a2/gal m\u00e1s barato que {n}",
+      whyFuelSame:"mismo precio de combustible",
+      whyCloser:"{d} mi m\u00e1s cerca",
+      whyLessWait:"{w} min menos de espera",
       dispatcherHeading:"Panel de despacho",
       tagline:"Envía cada carga a la terminal correcta, con confianza.",
       navDispatcher:"Despacho", navDriver:"App del conductor",
@@ -442,6 +459,14 @@
       rrUse:"\u9009\u7528",
       rrSent:"\u5df2\u8bf7\u6c42\u6539\u6d3e——\u8c03\u5ea6\u5df2\u6536\u5230",
       runMeta:"3 \u4e2a\u9694\u8231 \u00b7 \u5c1a\u672a\u88c5\u8f66",
+      whyPrefix:"\u4e3a\u4ec0\u4e48\uff1a",
+      whyBut:"\uff0c\u4f46",
+      whySuffix:"\u2014\u2014\u603b\u6210\u672c\u66f4\u4f4e",
+      whyFuelMore:"\u6cb9\u4ef7\u6bd4{n}\u8d35{c}\u00a2/\u52a0\u4ed1",
+      whyFuelLess:"\u6cb9\u4ef7\u6bd4{n}\u4fbf\u5b9c{c}\u00a2/\u52a0\u4ed1",
+      whyFuelSame:"\u6cb9\u4ef7\u76f8\u540c",
+      whyCloser:"\u8fd1{d}\u82f1\u91cc",
+      whyLessWait:"\u5c11\u7b49{w}\u5206\u949f",
       dispatcherHeading:"调度看板",
       tagline:"让每一车燃油，快速匹配最优油库。",
       navDispatcher:"调度看板", navDriver:"司机端",
@@ -535,6 +560,9 @@
     var scored = computeRanked();
     var firstEligibleIdx = -1;
     for(var i=0;i<scored.length;i++){ if(scored[i].eligible){ firstEligibleIdx=i; break; } }
+    var runner = null;
+    for(var j=firstEligibleIdx+1;j<scored.length;j++){ if(scored[j].eligible){ runner=scored[j]; break; } }
+    function fill(s, m){ for(var k in m){ s = s.split('{'+k+'}').join(m[k]); } return s; }
 
     var html = scored.map(function(d, idx){
       var isBest = d.eligible && idx===firstEligibleIdx;
@@ -559,6 +587,18 @@
         '<span class="stat-pill '+qc+'">'+t('fieldQueue')+d.queue+t('unitMin')+'</span>';
       var blockedLine = !d.eligible ? '<div class="blocked-reason">'+t('blockedReason')+'</div>' : '';
       var validLine = '<div class="valid-line">'+t('validUntil')+d.valid+'</div>';
+      var whyLine = '';
+      if(isBest && runner){
+        var fuelC = (effPrice(d)-effPrice(runner))*100;
+        var distD = runner.distance - d.distance;
+        var waitD = runner.queue - d.queue;
+        var fuelPart = Math.abs(fuelC) < 0.05 ? t('whyFuelSame')
+          : fill(fuelC > 0 ? t('whyFuelMore') : t('whyFuelLess'), {c:Math.abs(fuelC).toFixed(1), n:runner.name});
+        var ops = [];
+        if(distD > 0.05) ops.push(fill(t('whyCloser'), {d:distD.toFixed(1)}));
+        if(waitD > 0.5) ops.push(fill(t('whyLessWait'), {w:Math.round(waitD)}));
+        whyLine = '<div class="why-line">'+t('whyPrefix')+fuelPart+(ops.length ? t('whyBut')+ops.join(' \u00b7 ') : '')+t('whySuffix')+'</div>';
+      }
       var scoreBlock = d.eligible ?
         '<div class="score-wrap"><div class="score" style="color:'+(isBest?'var(--green)':'var(--text)')+'">'+d.score+'</div><div class="score-label">'+t('scoreLabel')+'</div></div>' : '';
       return '<div class="depot-card '+cls+'" data-id="'+d.id+'">'+
@@ -566,7 +606,7 @@
                  '<div class="depot-name">'+nameLine+'</div>'+
                  moneyLine+
                  '<div class="depot-stats">'+statsLine+'</div>'+
-                 blockedLine+validLine+
+                 blockedLine+validLine+whyLine+
                '</div>'+
                scoreBlock+
              '</div>';
