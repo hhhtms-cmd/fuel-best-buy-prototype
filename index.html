@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fuel Intelligence — Best Buy Concept Prototype</title>
+<style>
+  :root{
+    --bg:#f5f5f7; --surface:#ffffff; --text:#1d1d1f; --text-2:#6e6e73; --text-3:#a1a1a6;
+    --border:rgba(0,0,0,0.07); --blue:#0071e3; --blue-soft:rgba(0,113,227,0.1);
+    --green:#2fa84f; --green-soft:rgba(47,168,79,0.12); --orange:#c1740a; --orange-soft:rgba(255,149,0,0.13);
+    --red:#d7372e; --red-soft:rgba(255,59,48,0.08); --shadow:0 2px 8px rgba(0,0,0,0.04),0 10px 30px rgba(0,0,0,0.06);
+    --radius:20px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","PingFang SC","Helvetica Neue",Arial,sans-serif;
+    background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased;
+  }
+  .topbar{
+    position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between;
+    padding:14px 32px; background:rgba(255,255,255,0.82); backdrop-filter:saturate(180%) blur(20px);
+    border-bottom:1px solid var(--border); flex-wrap:wrap; gap:10px;
+  }
+  .brand{display:flex; align-items:center; gap:8px; font-size:18px; font-weight:600; letter-spacing:-0.3px; white-space:nowrap;}
+  .brand svg{width:24px; height:24px; flex-shrink:0;}
+  .proto-badge{font-size:11px; font-weight:700; background:#f5c518; color:#3a2f00;
+    padding:4px 12px; border-radius:20px; white-space:nowrap;}
+  .proto-footer{max-width:1180px; margin:0 auto; padding:0 32px 44px; font-size:12px; color:var(--text-3);}
+  .topbar-right{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .segment{display:flex; background:#e8e8ed; border-radius:10px; padding:3px; gap:2px;}
+  .segment button{border:none; background:transparent; padding:7px 15px; border-radius:8px; font-size:13px;
+    font-weight:500; color:var(--text-2); cursor:pointer; transition:.25s ease; white-space:nowrap; font-family:inherit;}
+  .segment button.active{background:#fff; color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,0.14);}
+  .lang{display:flex; gap:2px; background:#e8e8ed; border-radius:10px; padding:3px;}
+  .lang button{border:none; background:transparent; padding:7px 12px; border-radius:8px; font-size:12px;
+    font-weight:700; color:var(--text-2); cursor:pointer; transition:.25s; font-family:inherit;}
+  .lang button.active{background:var(--blue); color:#fff;}
+  .container{max-width:1180px; margin:0 auto; padding:36px 32px 70px;}
+  .hero-title{font-size:32px; font-weight:700; letter-spacing:-0.6px; margin:0 0 6px;}
+  .hero-sub{font-size:15px; color:var(--text-2); margin:0 0 30px;}
+  .kpi-row{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:28px;}
+  .kpi-card{background:var(--surface); border-radius:var(--radius); padding:24px 26px; box-shadow:var(--shadow);}
+  .kpi-value{font-size:32px; font-weight:700; letter-spacing:-0.5px; font-variant-numeric:tabular-nums;}
+  .kpi-value small{font-size:15px; font-weight:600;}
+  .kpi-label{font-size:13px; color:var(--text-2); margin-top:5px; font-weight:500;}
+  .kpi-card.c-green .kpi-value{color:var(--green);}
+  .kpi-card.c-blue .kpi-value{color:var(--blue);}
+  .kpi-card.c-orange .kpi-value{color:var(--orange);}
+  .main-grid{display:grid; grid-template-columns:1fr 300px; gap:18px; align-items:start;}
+  .panel{background:var(--surface); border-radius:var(--radius); padding:28px; box-shadow:var(--shadow);}
+  .panel h2{font-size:19px; font-weight:600; margin:0 0 4px; letter-spacing:-0.2px;}
+  .panel .sub{font-size:13px; color:var(--text-2); margin:0 0 22px;}
+  .sliders{display:flex; flex-direction:column; gap:14px; margin-bottom:24px; padding-bottom:20px; border-bottom:1px solid var(--border);}
+  .slider-row{display:flex; align-items:center; gap:12px;}
+  .slider-label{width:124px; font-size:13px; font-weight:500; color:var(--text); flex-shrink:0;}
+  .slider-row input[type=range]{flex:1; -webkit-appearance:none; appearance:none; height:5px; border-radius:3px; background:#e5e5ea; outline:none;}
+  .slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:20px; height:20px; border-radius:50%;
+    background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.28),0 0 0 1px rgba(0,0,0,0.05); cursor:pointer; border:3px solid var(--blue);}
+  .slider-row input[type=range]::-moz-range-thumb{width:20px; height:20px; border-radius:50%; background:#fff;
+    box-shadow:0 1px 4px rgba(0,0,0,0.28); cursor:pointer; border:3px solid var(--blue);}
+  .slider-pct{width:38px; text-align:right; font-size:13px; font-weight:700; color:var(--blue); font-variant-numeric:tabular-nums;}
+  .formula-note{font-size:11.5px; color:var(--text-3); margin-top:8px; line-height:1.5;}
+  .depot-list{display:flex; flex-direction:column; gap:11px;}
+  .depot-card{border:1px solid var(--border); border-radius:16px; padding:16px 18px; display:flex; align-items:center;
+    gap:14px; transition:.25s ease; background:#fff; cursor:pointer;}
+  .depot-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.08); transform:translateY(-1px);}
+  .depot-card.best{border-color:var(--green); background:var(--green-soft);}
+  .depot-card.blocked{opacity:.6; border-color:var(--red); background:var(--red-soft); cursor:not-allowed;}
+  .depot-card.blocked:hover{box-shadow:none; transform:none;}
+  .depot-card.assigned{box-shadow:0 0 0 2px var(--blue), var(--shadow);}
+  .depot-main{flex:1; min-width:0;}
+  .depot-name{font-size:15px; font-weight:600; margin-bottom:7px; display:flex; align-items:center; gap:7px; flex-wrap:wrap;}
+  .check{color:var(--blue); font-size:14px;}
+  .badge{font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px;}
+  .badge.best{background:var(--green); color:#fff;}
+  .badge.blocked{background:var(--red); color:#fff;}
+  .depot-stats{display:flex; gap:8px; flex-wrap:wrap;}
+  .stat-pill{font-size:12px; padding:4px 10px; border-radius:20px; background:#f2f2f4; color:var(--text-2);
+    font-weight:500; font-variant-numeric:tabular-nums;}
+  .stat-pill.q-green{background:var(--green-soft); color:var(--green);}
+  .stat-pill.q-orange{background:var(--orange-soft); color:var(--orange);}
+  .stat-pill.q-red{background:var(--red-soft); color:var(--red);}
+  .blocked-reason{font-size:11.5px; color:var(--red); margin-top:5px;}
+  .score-wrap{text-align:center; width:56px; flex-shrink:0;}
+  .score{font-size:20px; font-weight:700; font-variant-numeric:tabular-nums;}
+  .score-label{font-size:10.5px; color:var(--text-3); margin-top:2px;}
+  .sidebar{display:flex; flex-direction:column; gap:12px;}
+  .sidebar-title{font-size:13px; font-weight:600; color:var(--text-2); margin:2px 0 0 4px;}
+  .feed-item{display:flex; gap:9px; padding:13px 15px; background:var(--surface); border-radius:14px;
+    box-shadow:var(--shadow); font-size:12.5px; line-height:1.5;}
+  .feed-dot{width:7px; height:7px; border-radius:50%; margin-top:5px; flex-shrink:0;}
+  .feed-time{color:var(--text-3); font-size:11px; margin-top:3px;}
+  .driver-wrap{display:flex; justify-content:center; padding:16px 0 0;}
+  .phone{width:320px; background:#000; border-radius:44px; padding:11px; box-shadow:0 26px 54px rgba(0,0,0,0.18);}
+  .phone-screen{background:var(--bg); border-radius:34px; padding:24px 18px 22px; min-height:600px; position:relative; overflow:hidden;}
+  .notch{position:absolute; top:11px; left:50%; transform:translateX(-50%); width:100px; height:24px; background:#000; border-radius:14px;}
+  .task-card{background:var(--surface); border-radius:22px; padding:22px 20px; margin-top:28px; box-shadow:var(--shadow);}
+  .task-dest{font-size:22px; font-weight:700; letter-spacing:-0.4px; margin-bottom:12px;}
+  .task-row{display:flex; justify-content:space-between; padding:9px 0; border-top:1px solid var(--border); font-size:13.5px;}
+  .task-row:first-of-type{border-top:none;}
+  .task-row span:first-child{color:var(--text-2);}
+  .task-row span:last-child{font-weight:600; font-variant-numeric:tabular-nums;}
+  .status-banner{margin-top:16px; text-align:center; padding:14px; border-radius:16px; background:var(--blue-soft);
+    color:var(--blue); font-weight:600; font-size:14px; transition:.3s;}
+  .status-banner.arrived{background:var(--green-soft); color:var(--green);}
+  .status-arrived-label{font-size:11.5px; font-weight:600; opacity:.85;}
+  .status-arrived-timer{font-size:22px; font-weight:700; font-variant-numeric:tabular-nums; margin-top:2px; letter-spacing:.5px;}
+  .simulate-btn{display:block; margin:14px auto 0; background:none; border:1.5px solid var(--blue); color:var(--blue);
+    font-size:12.5px; font-weight:600; padding:9px 20px; border-radius:20px; cursor:pointer; transition:.2s; font-family:inherit;}
+  .simulate-btn:hover{background:var(--blue); color:#fff;}
+  .emergency-row{display:flex; flex-direction:column; gap:9px; margin-top:24px;}
+  .emergency-btn{border:none; background:var(--red); color:#fff; font-size:14px; font-weight:600; padding:14px;
+    border-radius:16px; cursor:pointer; box-shadow:0 6px 16px rgba(215,55,46,0.28); transition:.15s; font-family:inherit;}
+  .emergency-btn:active{transform:scale(.97);}
+  .toast{position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(16px); background:#1d1d1f; color:#fff;
+    padding:12px 22px; border-radius:14px; font-size:13px; font-weight:500; opacity:0; pointer-events:none; transition:.3s;
+    z-index:50; box-shadow:0 10px 30px rgba(0,0,0,0.22); max-width:88vw; text-align:center;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  @media (max-width:820px){
+    .main-grid{grid-template-columns:1fr;}
+    .kpi-row{grid-template-columns:1fr;}
+    .topbar{padding:12px 16px;}
+    .container{padding:24px 16px 56px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#0071e3"/><path d="M12 12L16 8" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="1.6" fill="#fff"/></svg>
+    <span>Fuel Intelligence</span>
+    <span class="proto-badge" data-i18n="protoBadge"></span>
+  </div>
+  <div class="topbar-right">
+    <div class="segment" id="view-switch">
+      <button data-view="dispatcher" class="active" data-i18n="navDispatcher"></button>
+      <button data-view="driver" data-i18n="navDriver"></button>
+    </div>
+    <div class="lang" id="lang-switch">
+      <button data-lang="en" class="active">EN</button>
+      <button data-lang="es">ES</button>
+      <button data-lang="zh">中文</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="view-dispatcher">
+    <h1 class="hero-title" data-i18n="dispatcherHeading"></h1>
+    <p class="hero-sub" data-i18n="tagline"></p>
+
+    <div class="kpi-row">
+      <div class="kpi-card c-green">
+        <div class="kpi-value">4</div>
+        <div class="kpi-label" data-i18n="kpiTerminals"></div>
+      </div>
+      <div class="kpi-card c-blue">
+        <div class="kpi-value">72%</div>
+        <div class="kpi-label" data-i18n="kpiAllocation"></div>
+      </div>
+      <div class="kpi-card c-orange">
+        <div class="kpi-value">3</div>
+        <div class="kpi-label" data-i18n="kpiAlerts"></div>
+      </div>
+    </div>
+
+    <div class="main-grid">
+      <div class="panel">
+        <h2 data-i18n="routingTitle"></h2>
+        <p class="sub" data-i18n="routingSub"></p>
+
+        <div class="sliders">
+          <div class="slider-row">
+            <div class="slider-label" data-i18n="sliderPrice"></div>
+            <input type="range" min="0" max="100" value="40" id="w-price">
+            <div class="slider-pct" id="pct-price">40%</div>
+          </div>
+          <div class="slider-row">
+            <div class="slider-label" data-i18n="sliderQueue"></div>
+            <input type="range" min="0" max="100" value="35" id="w-queue">
+            <div class="slider-pct" id="pct-queue">35%</div>
+          </div>
+          <div class="slider-row">
+            <div class="slider-label" data-i18n="sliderDistance"></div>
+            <input type="range" min="0" max="100" value="25" id="w-distance">
+            <div class="slider-pct" id="pct-distance">25%</div>
+          </div>
+          <div class="formula-note" data-i18n="formulaNote"></div>
+        </div>
+
+        <div class="depot-list" id="depot-list"></div>
+      </div>
+
+      <div class="sidebar">
+        <div class="sidebar-title" data-i18n="feedTitle"></div>
+        <div class="feed-item">
+          <div class="feed-dot" style="background:var(--blue)"></div>
+          <div><div data-i18n="feed1"></div><div class="feed-time" data-i18n="timeJustNow"></div></div>
+        </div>
+        <div class="feed-item">
+          <div class="feed-dot" style="background:var(--green)"></div>
+          <div><div data-i18n="feed2"></div><div class="feed-time" data-i18n="time5m"></div></div>
+        </div>
+        <div class="feed-item">
+          <div class="feed-dot" style="background:var(--red)"></div>
+          <div><div data-i18n="feed3"></div><div class="feed-time" data-i18n="time12m"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-driver" style="display:none;">
+    <div class="driver-wrap">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="notch"></div>
+          <div class="task-card">
+            <div class="task-dest">Westside Terminal</div>
+            <div class="task-row"><span data-i18n="driverPump"></span><span>4</span></div>
+            <div class="task-row"><span data-i18n="driverFuel"></span><span id="driver-fuel"></span></div>
+            <div class="task-row"><span data-i18n="driverLoad"></span><span>8,500 gal</span></div>
+          </div>
+          <div class="status-banner" id="status-banner">
+            <span id="status-enroute-text"></span>
+            <div id="status-arrived-block" style="display:none;">
+              <div class="status-arrived-label" data-i18n="queueTimerLabel"></div>
+              <div class="status-arrived-timer" id="status-timer">00:00</div>
+            </div>
+          </div>
+          <button class="simulate-btn" id="simulate-btn" data-i18n="simulateArrival"></button>
+          <div class="emergency-row">
+            <button class="emergency-btn" data-alert="emergencyClosed" data-i18n="emergencyClosed"></button>
+            <button class="emergency-btn" data-alert="emergencyQuota" data-i18n="emergencyQuota"></button>
+            <button class="emergency-btn" data-alert="emergencyQueue" data-i18n="emergencyQueue"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="proto-footer" data-i18n="protoFooter"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  var translations = {
+    en: {
+      protoBadge:"Concept prototype",
+      protoFooter:"Concept prototype for illustration only \u2014 not a proposed solution. All data shown is simulated.",
+      dispatcherHeading:"Dispatcher dashboard",
+      tagline:"Route every load to the right terminal, with confidence.",
+      navDispatcher:"Dispatcher", navDriver:"Driver app",
+      kpiTerminals:"Terminals evaluated", kpiAllocation:"Allocation used", kpiAlerts:"Pending alerts",
+      routingTitle:"Smart routing", routingSub:"Order #4521 · 8,500 gal Diesel #2 · needed within 3 hrs",
+      sliderPrice:"Lowest price", sliderQueue:"Shortest queue", sliderDistance:"Nearest distance",
+      formulaNote:"Score reflects true cost = rack price + distance cost + (wait × labor rate) − allocation risk",
+      fieldQueue:"Queue: ", unitMin:" min",
+      badgeBest:"Best match", badgeBlocked:"Not eligible", blockedReason:"Contract quota exhausted",
+      scoreLabel:"Score", assignedTo:"Assigned to ",
+      feedTitle:"Live feed",
+      feed1:"Harbor Fuel Depot raised rack price to $2.86/gal",
+      feed2:"North County Rack: contract quota renewed +5,000 gal",
+      feed3:"Valley Terminal: quota exhausted for Q3 contract",
+      timeJustNow:"Just now", time5m:"5 min ago", time12m:"12 min ago",
+      driverPump:"Pump", driverFuel:"Fuel type", driverLoad:"Load volume", driverFuelValue:"Diesel #2",
+      statusEnRoute:"En route", queueTimerLabel:"Queue timer",
+      simulateArrival:"Simulate arrival",
+      emergencyClosed:"Depot closed", emergencyQuota:"No available quota", emergencyQueue:"Queue too long",
+      alertSent:"Alert sent: "
+    },
+    es: {
+      protoBadge:"Prototipo conceptual",
+      protoFooter:"Prototipo conceptual solo con fines ilustrativos \u2014 no es una soluci\u00f3n propuesta. Todos los datos mostrados son simulados.",
+      dispatcherHeading:"Panel de despacho",
+      tagline:"Envía cada carga a la terminal correcta, con confianza.",
+      navDispatcher:"Despacho", navDriver:"App del conductor",
+      kpiTerminals:"Terminales evaluadas", kpiAllocation:"Cuota utilizada", kpiAlerts:"Alertas pendientes",
+      routingTitle:"Ruta inteligente", routingSub:"Pedido #4521 · 8,500 gal Diésel N.º 2 · necesario en 3 h",
+      sliderPrice:"Precio más bajo", sliderQueue:"Cola más corta", sliderDistance:"Distancia más cercana",
+      formulaNote:"El puntaje refleja costo real = precio + costo de distancia + (espera × tarifa laboral) − riesgo de asignación",
+      fieldQueue:"Cola: ", unitMin:" min",
+      badgeBest:"Mejor opción", badgeBlocked:"No elegible", blockedReason:"Cuota contractual agotada",
+      scoreLabel:"Puntaje", assignedTo:"Asignado a ",
+      feedTitle:"Actividad en vivo",
+      feed1:"Harbor Fuel Depot subió el precio de lista a $2.86/gal",
+      feed2:"North County Rack: cuota contractual renovada +5,000 gal",
+      feed3:"Valley Terminal: cuota agotada para el contrato del Q3",
+      timeJustNow:"Justo ahora", time5m:"Hace 5 min", time12m:"Hace 12 min",
+      driverPump:"Surtidor", driverFuel:"Tipo de combustible", driverLoad:"Volumen de carga", driverFuelValue:"Diésel N.º 2",
+      statusEnRoute:"En camino", queueTimerLabel:"Cronómetro de cola",
+      simulateArrival:"Simular llegada",
+      emergencyClosed:"Depósito cerrado", emergencyQuota:"Sin cuota disponible", emergencyQueue:"Cola demasiado larga",
+      alertSent:"Alerta enviada: "
+    },
+    zh: {
+      protoBadge:"概念原型",
+      protoFooter:"概念原型，仅供演示说明\u2014非正式方案。所有数据均为模拟数据。",
+      dispatcherHeading:"调度看板",
+      tagline:"让每一车燃油，快速匹配最优油库。",
+      navDispatcher:"调度看板", navDriver:"司机端",
+      kpiTerminals:"已评估油库", kpiAllocation:"配额使用率", kpiAlerts:"待处理警报",
+      routingTitle:"智能路由", routingSub:"订单 #4521 · 8,500 加仑 2号柴油 · 需在 3 小时内送达",
+      sliderPrice:"最低价格", sliderQueue:"最短排队", sliderDistance:"最近距离",
+      formulaNote:"评分依据 True Cost = 挂牌价 + 距离成本 + (等待时间 × 人工费率) − 配额风险",
+      fieldQueue:"排队：", unitMin:"分钟",
+      badgeBest:"最优选择", badgeBlocked:"配额不足", blockedReason:"合同配额已耗尽",
+      scoreLabel:"评分", assignedTo:"已指派给 ",
+      feedTitle:"实时动态",
+      feed1:"Harbor Fuel Depot 挂牌价上调至 $2.86/加仑",
+      feed2:"North County Rack：合同配额续签 +5,000 加仑",
+      feed3:"Valley Terminal：Q3 合同配额已耗尽",
+      timeJustNow:"刚刚", time5m:"5 分钟前", time12m:"12 分钟前",
+      driverPump:"油枪编号", driverFuel:"油品型号", driverLoad:"装载总量", driverFuelValue:"2号柴油",
+      statusEnRoute:"行驶中", queueTimerLabel:"排队计时",
+      simulateArrival:"模拟到达",
+      emergencyClosed:"油库关闭", emergencyQuota:"无可用配额", emergencyQueue:"排队严重过长",
+      alertSent:"警报已发送："
+    }
+  };
+
+  var depots = [
+    {id:1,name:"Westside Terminal",price:2.84,distance:4.2,queue:15,eligible:true},
+    {id:2,name:"Harbor Fuel Depot",price:2.79,distance:11.6,queue:45,eligible:true},
+    {id:3,name:"North County Rack",price:2.91,distance:2.1,queue:120,eligible:true},
+    {id:4,name:"Valley Terminal",price:2.75,distance:18.3,queue:20,eligible:false}
+  ];
+
+  var lang = 'en';
+  var assignedId = null;
+  var arrived = false;
+  var timerSeconds = 0;
+  var timerHandle = null;
+
+  function t(key){ return translations[lang][key] !== undefined ? translations[lang][key] : key; }
+
+  function queueClass(minutes){
+    if(minutes < 30) return 'q-green';
+    if(minutes <= 90) return 'q-orange';
+    return 'q-red';
+  }
+
+  function computeRanked(){
+    var wp = +document.getElementById('w-price').value;
+    var wq = +document.getElementById('w-queue').value;
+    var wd = +document.getElementById('w-distance').value;
+    var wSum = (wp+wq+wd) || 1;
+    document.getElementById('pct-price').textContent = Math.round(wp/wSum*100)+'%';
+    document.getElementById('pct-queue').textContent = Math.round(wq/wSum*100)+'%';
+    document.getElementById('pct-distance').textContent = Math.round(wd/wSum*100)+'%';
+
+    var elig = depots.filter(function(d){return d.eligible;});
+    var prices = elig.map(function(d){return d.price;});
+    var dists = elig.map(function(d){return d.distance;});
+    var queues = elig.map(function(d){return d.queue;});
+    var minP=Math.min.apply(null,prices), maxP=Math.max.apply(null,prices);
+    var minD=Math.min.apply(null,dists), maxD=Math.max.apply(null,dists);
+    var minQ=Math.min.apply(null,queues), maxQ=Math.max.apply(null,queues);
+
+    var scored = depots.map(function(d){
+      if(!d.eligible) return Object.assign({},d,{score:null});
+      var ps = maxP===minP ? 1 : 1-(d.price-minP)/(maxP-minP);
+      var ds = maxD===minD ? 1 : 1-(d.distance-minD)/(maxD-minD);
+      var qs = maxQ===minQ ? 1 : 1-(d.queue-minQ)/(maxQ-minQ);
+      var comp = (ps*wp + qs*wq + ds*wd)/wSum;
+      return Object.assign({},d,{score:Math.round(comp*100)});
+    });
+    scored.sort(function(a,b){
+      if(a.eligible !== b.eligible) return a.eligible ? -1 : 1;
+      var as = a.score===null?-1:a.score;
+      var bs = b.score===null?-1:b.score;
+      return bs-as;
+    });
+    return scored;
+  }
+
+  function renderDepots(){
+    var scored = computeRanked();
+    var firstEligibleIdx = -1;
+    for(var i=0;i<scored.length;i++){ if(scored[i].eligible){ firstEligibleIdx=i; break; } }
+
+    var html = scored.map(function(d, idx){
+      var isBest = d.eligible && idx===firstEligibleIdx;
+      var isAssigned = d.id === assignedId;
+      var cls = (d.eligible ? (isBest?'best':'') : 'blocked') + (isAssigned?' assigned':'');
+      var qc = queueClass(d.queue);
+      var nameLine = d.name +
+        (isAssigned ? ' <span class="check">&#10003;</span>' : '') +
+        (isBest ? ' <span class="badge best">'+t('badgeBest')+'</span>' : '') +
+        (!d.eligible ? ' <span class="badge blocked">'+t('badgeBlocked')+'</span>' : '');
+      var statsLine =
+        '<span class="stat-pill">$'+d.price.toFixed(2)+'/gal</span>'+
+        '<span class="stat-pill">'+d.distance+' mi</span>'+
+        '<span class="stat-pill '+qc+'">'+t('fieldQueue')+d.queue+t('unitMin')+'</span>';
+      var blockedLine = !d.eligible ? '<div class="blocked-reason">'+t('blockedReason')+'</div>' : '';
+      var scoreBlock = d.eligible ?
+        '<div class="score-wrap"><div class="score" style="color:'+(isBest?'var(--green)':'var(--text)')+'">'+d.score+'</div><div class="score-label">'+t('scoreLabel')+'</div></div>' : '';
+      return '<div class="depot-card '+cls+'" data-id="'+d.id+'">'+
+               '<div class="depot-main">'+
+                 '<div class="depot-name">'+nameLine+'</div>'+
+                 '<div class="depot-stats">'+statsLine+'</div>'+
+                 blockedLine+
+               '</div>'+
+               scoreBlock+
+             '</div>';
+    }).join('');
+    document.getElementById('depot-list').innerHTML = html;
+  }
+
+  function formatTimer(){
+    var m = String(Math.floor(timerSeconds/60)).padStart(2,'0');
+    var s = String(timerSeconds%60).padStart(2,'0');
+    return m+':'+s;
+  }
+
+  function applyLang(){
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      el.textContent = t(el.getAttribute('data-i18n'));
+    });
+    document.getElementById('driver-fuel').textContent = t('driverFuelValue');
+    document.getElementById('status-enroute-text').textContent = t('statusEnRoute');
+    document.getElementById('status-enroute-text').style.display = arrived ? 'none' : '';
+    document.getElementById('status-arrived-block').style.display = arrived ? '' : 'none';
+    document.getElementById('status-timer').textContent = formatTimer();
+    renderDepots();
+  }
+
+  document.getElementById('lang-switch').addEventListener('click', function(e){
+    var btn = e.target.closest('button[data-lang]');
+    if(!btn) return;
+    lang = btn.getAttribute('data-lang');
+    document.querySelectorAll('#lang-switch button').forEach(function(b){ b.classList.toggle('active', b===btn); });
+    applyLang();
+  });
+
+  document.getElementById('view-switch').addEventListener('click', function(e){
+    var btn = e.target.closest('button[data-view]');
+    if(!btn) return;
+    var view = btn.getAttribute('data-view');
+    document.querySelectorAll('#view-switch button').forEach(function(b){ b.classList.toggle('active', b===btn); });
+    document.getElementById('view-dispatcher').style.display = view==='dispatcher' ? '' : 'none';
+    document.getElementById('view-driver').style.display = view==='driver' ? '' : 'none';
+  });
+
+  ['w-price','w-queue','w-distance'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', renderDepots);
+  });
+
+  document.getElementById('depot-list').addEventListener('click', function(e){
+    var card = e.target.closest('.depot-card');
+    if(!card) return;
+    var id = +card.getAttribute('data-id');
+    var depot = null;
+    for(var i=0;i<depots.length;i++){ if(depots[i].id===id){ depot=depots[i]; break; } }
+    if(!depot || !depot.eligible) return;
+    assignedId = id;
+    renderDepots();
+    showToast(t('assignedTo')+depot.name);
+  });
+
+  document.getElementById('simulate-btn').addEventListener('click', function(){
+    if(timerHandle) return;
+    arrived = true;
+    timerSeconds = 0;
+    document.getElementById('status-banner').classList.add('arrived');
+    document.getElementById('status-enroute-text').style.display = 'none';
+    document.getElementById('status-arrived-block').style.display = '';
+    document.getElementById('status-timer').textContent = formatTimer();
+    timerHandle = setInterval(function(){
+      timerSeconds++;
+      document.getElementById('status-timer').textContent = formatTimer();
+    }, 1000);
+  });
+
+  function showToast(msg){
+    var toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(function(){ toast.classList.remove('show'); }, 2200);
+  }
+
+  document.querySelectorAll('.emergency-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var key = btn.getAttribute('data-alert');
+      showToast(t('alertSent')+t(key));
+    });
+  });
+
+  applyLang();
+})();
+</script>
+
+</body>
+</html>
